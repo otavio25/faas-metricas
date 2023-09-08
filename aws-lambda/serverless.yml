@@ -7,11 +7,12 @@ plugins:
 provider:
   name: aws
   runtime: nodejs18.x
+  region: us-east-2
 
 functions:
   api:
     handler: index.handler
     events:
       - httpApi:
-          path: /
-          method: get
+          path: /metrics
+          method: post

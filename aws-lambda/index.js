@@ -1,5 +1,18 @@
+const natural = require('natural')
+
 module.exports.handler = async (event) => {
   try {
+    if (!event || !event.body) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'Entrada inválida!',
+        }),
+      };
+    }
+
+    let data = JSON.parse(event.body)
+
     const stopwords = [
       "the", "a", "an", "is", "are", "like", "alike", "about", "be", "may", "can", "assumed", "full", "do", "has", "self",
       "in", "on", "at", "of", "as", "to", "with", "by", "for", "from", "into", "onto", "upon", "over", "under", "both", "use",
@@ -24,7 +37,8 @@ module.exports.handler = async (event) => {
     ]
     const groupedByYear = {}
     const tokenizer = new natural.WordTokenizer()
-    event.forEach(item => {
+
+    data.forEach(item => {
         const year = item.publication_date.split('-')[0];
         if (!groupedByYear[year]) {
             groupedByYear[year] = []
@@ -46,12 +60,8 @@ module.exports.handler = async (event) => {
         result_metrics.push({ [year]: groupedByYear[year] })
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: `${result_metrics}`
-      }),
-    }
+    return result_metrics
+
   } catch (error) {
     return {
       statusCode: 500,
