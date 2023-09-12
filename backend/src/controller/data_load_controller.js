@@ -1,11 +1,10 @@
 const model = require("../model/model")
 const fs = require('fs')
-const natural = require('natural')
 const dotenv = require('dotenv')
 dotenv.config({path: '../.env' })
 
 module.exports = {
-    data_load : async(request, response) => {
+    dataLoad : async(request, response) => {
         try {
             console.log("lendo arquivo com os papers...")
             data = fs.readFileSync(process.env.PAPERS)
@@ -26,38 +25,34 @@ module.exports = {
             return response.status(500).json({error: 'Erro no servidor!'})
         }
     },
-    update_data : async(request, response) => {
+    updateData : async(request, response) => {
         try {
             console.log("lendo arquivo com os novos papers...")
-            data = fs.readFileSync(process.env.PAPERS)
+            let data = fs.readFileSync(process.env.PAPERS)
             data = JSON.parse(data)
 
             console.log("Leitura dos arquivos JSON realizada com sucesso")
 
-            let update_operation = data.map((item) => ({
-                updateOne: {
-                    filter: { query: item.query }, // Filtrar pelo cve_id
-                    update: {
-                        $set: {
-                            databases: item.databases,
-                            limit: item.limit,
-                            limit_per_database: item.limit_per_database,
-                            number_of_papers: item.number_of_papers,
-                            number_of_papers_by_database: item.number_of_papers_by_database,
-                            papers: item.papers,
-                            processed_at: item.processed_at,
-                            publication_types: item.publication_types,
-                            query: item.query,
-                            since: item.since,
-                            until: item.until
-                        }
-                    },
-                    upsert: true // Inserir se não existir
+            const filter = { query: data.query }
+            const update = {
+                $set: {
+                    databases: data.databases,
+                    limit: data.limit,
+                    limit_per_database: data.limit_per_database,
+                    number_of_papers: data.papers.length,
+                    number_of_papers_by_database: data.papers.length,
+                    papers: data.papers,
+                    processed_at: data.processed_at,
+                    publication_types: data.publication_types,
+                    query: data.query,
+                    since: data.since,
+                    until: data.until
                 }
-            }))
+            }
+            const options = { upsert: true }
 
             console.log("Começando a inserir e atualizar os novos papers no banco....")
-            const result = await model.bulkWrite(update_operation)
+            const result = await model.updateMany(filter, update, options)
             console.log(result)
             return response.status(200).json({message: "Nova carga de dados realizada com sucesso"})
         } catch (error) {
@@ -65,7 +60,7 @@ module.exports = {
             return response.status(500).json({error: 'Erro no servidor!'})
         }
     },
-    get_metrics_papers_aws : async (request, response) => {
+    getMetricsPapersAws : async (request, response) => {
         try {
             let result = await model.find()
             result = result.shift()

@@ -1,6 +1,6 @@
 const mongoose = require('../database/index')
 
-const PapersSchema = new mongoose.Schema ({
+const papersSchema = new mongoose.Schema ({
     _id: String,
     databases: Array,
     limit: Number,
@@ -15,6 +15,6 @@ const PapersSchema = new mongoose.Schema ({
     until: String
 })
 
-const papers = mongoose.model('papers', PapersSchema)
+const papers = mongoose.model('papers', papersSchema)
 
 module.exports = papers
